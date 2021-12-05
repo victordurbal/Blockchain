@@ -79,8 +79,8 @@ it('can add the star name and star symbol properly', async() => {
     let starId = 6;
     await instance.createStar('awesome star', starId, {from: user1});
     //Call the name and symbol properties in the Smart Contract and compare with the name and symbol provided
-    assert.equal(await instance.getName(),'vicDuToken');
-    assert.equal(await instance.getSymbol(),'VDU');
+    assert.equal(await instance.name(),'vicDuToken');
+    assert.equal(await instance.symbol(),'VDU');
 });
 
 it('lets 2 users exchange stars', async() => {
@@ -105,7 +105,7 @@ it('lets a user transfer a star', async() => {
     let starId1 = 9;
     await instance.createStar('awesome star', starId1, {from: user1});
     //use the transferStar function implemented in the Smart Contract
-    await instance.transferStar(user2,starId1);
+    await instance.transferStar(user2,starId1, {from: user1});
     //Verify the star owner changed.
     assert.equal(await instance.ownerOf.call(starId1), user2);
 });
