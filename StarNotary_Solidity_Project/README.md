@@ -3,7 +3,7 @@ ERC721 token creation (Star token) and deploy on Rinkeby network
 1) ERC-721 Token Name : vicDuToken
 2) ERC-721 Token Symbol : VDU
 3) Version of the Truffle and OpenZeppelin used : truffle@5.0.2 -- openzeppelin-solidity@2.3
-4) ERC721 contract address 0x02Fa701a37820D1613030DcE62C0B6F1739afee3
+4) ![ERC721 contract address](https://rinkeby.etherscan.io/address/0x02Fa701a37820D1613030DcE62C0B6F1739afee3)
 
 ### Dependencies
 For this project, you will need to have:
