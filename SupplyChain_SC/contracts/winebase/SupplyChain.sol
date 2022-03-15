@@ -1,6 +1,7 @@
 // SPDX-License-Identifier: MIT
-pragma solidity >=0.5.16;
-// pragma solidity >=0.8.0;
+// pragma solidity >=0.5.16;
+pragma solidity >=0.8.0;
+
 // contract address rinkeby 0xad22759800286b8f0f21ce045013746b5ec5d3aa
 // contract ABI 0xad22759800286B8f0F21Ce045013746B5EC5d3aA
 // transaction hash 0x1a048fc28dc47cfa7f07b91fdbfe4ae847cf405b30d9cf871286ae1cecd8bb7b
@@ -177,7 +178,7 @@ contract SupplyChain is FarmerRole, RetailerRole, DistributorRole, ConsumerRole,
     items[_upc].sku = sku;
     
     items[_upc].productID = _upc*10000 + sku;
-    items[_upc].ownerID = msg.sender;
+    items[_upc].ownerID = owner;
     // Emit the appropriate event
     emit Harvested(_upc);
   }
@@ -254,7 +255,7 @@ contract SupplyChain is FarmerRole, RetailerRole, DistributorRole, ConsumerRole,
     // Call modifier to check if upc has passed previous supply chain stage
     // Access Control List enforced by calling Smart Contract / DApp
     // Update the appropriate fields - ownerID, retailerID, itemState
-    items[_upc].ownerID = msg.sender;
+    // items[_upc].ownerID = msg.sender;
     items[_upc].retailerID = msg.sender;
     items[_upc].itemState = State.Received;
     // Emit the appropriate event
@@ -268,7 +269,7 @@ contract SupplyChain is FarmerRole, RetailerRole, DistributorRole, ConsumerRole,
     // Call modifier to check if upc has passed previous supply chain stage
     // Access Control List enforced by calling Smart Contract / DApp
     // Update the appropriate fields - ownerID, consumerID, itemState
-    items[_upc].ownerID = msg.sender;
+    // items[_upc].ownerID = msg.sender;
     items[_upc].consumerID = msg.sender;
     items[_upc].itemState = State.Purchased;
     // Emit the appropriate event
