@@ -84,7 +84,7 @@ contract('SupplyChain', function(accounts) {
 
         // Mark an item as Processed by calling function processtItem()
         await supplyChain.addFarmer(originFarmerID);
-        // let tx1 = await supplyChain.harvestItem(upc, originFarmerID, originFarmName, originFarmInformation, originFarmLatitude, originFarmLongitude, productNotes)
+        let tx1 = await supplyChain.harvestItem(upc, originFarmerID, originFarmName, originFarmInformation, originFarmLatitude, originFarmLongitude, productNotes)
         let tx = await SupplyChain.processItem(upc, { from: originFarmerID })
         // Watch the emitted event Processed()
         truffleAssert.eventEmitted(tx, 'Processed', (eventEmit) => {
