@@ -47,15 +47,15 @@ contract('SupplyChain', function(accounts) {
         const supplyChain = await SupplyChain.deployed()
         
         // Declare and Initialize a variable for event
-        // var eventEmit = false
+        var eventEmit = false // cannot be const or will throw an error when trying to change its value !
 
         // Mark an item as Harvested by calling function harvestItem()
         let tx = await supplyChain.harvestItem(upc, originFarmerID, originFarmName, originFarmInformation, originFarmLatitude, originFarmLongitude, productNotes)
         // Watch the emitted event Harvested()
         let eventH = tx.logs[0].event
         console.log(eventH)
-        truffleAssert.eventEmitted(tx, 'Harvested', (eventEmit) => {
-            return eventEmit == true
+        truffleAssert.eventEmitted(tx, 'Harvested', (ev) => {
+            return eventEmit = true
         })
 
         // Retrieve the just now saved item from blockchain by calling function fetchItem()
@@ -73,21 +73,21 @@ contract('SupplyChain', function(accounts) {
         assert.equal(resultBufferOne[7], originFarmLongitude, 'Error: Missing or Invalid originFarmLongitude')
         assert.equal(resultBufferTwo[5], 0, 'Error: Invalid item State')
         assert.equal(eventEmit, true, 'Invalid event emitted')        
-    })    
+    })
 
     // 2nd Test
     it("Testing smart contract function processItem() that allows a farmer to process grape", async() => {
         const supplyChain = await SupplyChain.deployed()
         
         // Declare and Initialize a variable for event
-        // var eventEmit = false
+        var eventEmit = false
 
         // Mark an item as Processed by calling function processtItem()
         await supplyChain.addFarmer(originFarmerID);
         let tx1 = await supplyChain.harvestItem(upc, originFarmerID, originFarmName, originFarmInformation, originFarmLatitude, originFarmLongitude, productNotes)
-        let tx = await SupplyChain.processItem(upc, { from: originFarmerID })
+        let tx = await supplyChain.processItem(upc, { from: originFarmerID })
         // Watch the emitted event Processed()
-        truffleAssert.eventEmitted(tx, 'Processed', (eventEmit) => {
+        truffleAssert.eventEmitted(tx, 'Processed', (ev) => {
             return eventEmit = true
         })
 
@@ -96,179 +96,212 @@ contract('SupplyChain', function(accounts) {
 
         // Verify the result set
         assert.equal(resultBufferTwo[5], 1, 'Error: Invalid item State')
-        // assert.equal(eventEmit, true, 'Invalid event emitted')
+        assert.equal(eventEmit, true, 'Invalid event emitted')
     })
 
     // 3rd Test
-    // it("Testing smart contract function packItem() that allows a farmer to pack wine", async() => {
-    //     const supplyChain = await SupplyChain.deployed()
+    it("Testing smart contract function packItem() that allows a farmer to pack wine", async() => {
+        const supplyChain = await SupplyChain.deployed()
         
-    //     // Declare and Initialize a variable for event
-    //     var eventEmit = false
+        // Declare and Initialize a variable for event
+        var eventEmit = false
         
-    //     // Mark an item as Packed by calling function packItem()
-    //     let tx = await SupplyChain.packItem(upc)
-    //     // Watch the emitted event Packed()
-    //     truffleAssert.eventEmitted(tx, 'packItem', (eventEmit) => {
-    //         return eventEmit = true
-    //     })
+        // Mark an item as Packed by calling function packItem()
+        let tx1 = await supplyChain.harvestItem(upc, originFarmerID, originFarmName, originFarmInformation, originFarmLatitude, originFarmLongitude, productNotes)
+        let tx2 = await supplyChain.processItem(upc, { from: originFarmerID })
+        let tx = await supplyChain.packItem(upc, { from: originFarmerID })
+        // Watch the emitted event Packed()
+        truffleAssert.eventEmitted(tx, 'Packed', (ev) => {
+            return eventEmit = true
+        })
 
-    //     // Retrieve the just now saved item from blockchain by calling function fetchItem()
-    //     const resultBufferTwo = await supplyChain.fetchItemBufferTwo.call(upc)
+        // Retrieve the just now saved item from blockchain by calling function fetchItem()
+        const resultBufferTwo = await supplyChain.fetchItemBufferTwo.call(upc)
 
-    //     // Verify the result set
-    //     assert.equal(resultBufferTwo[5], 2, 'Error: Invalid item State')
-    //     assert.equal(eventEmit, true, 'Invalid event emitted')
+        // Verify the result set
+        assert.equal(resultBufferTwo[5], 2, 'Error: Invalid item State')
+        assert.equal(eventEmit, true, 'Invalid event emitted')
         
-    // })    
+    })
 
-    // // 4th Test
-    // it("Testing smart contract function sellItem() that allows a farmer to sell wine", async() => {
-    //     const supplyChain = await SupplyChain.deployed()
+    // 4th Test
+    it("Testing smart contract function sellItem() that allows a farmer to sell wine", async() => {
+        const supplyChain = await SupplyChain.deployed()
         
-    //     // Declare and Initialize a variable for event
-    //     var eventEmit = false
+        // Declare and Initialize a variable for event
+        var eventEmit = false
         
-    //     // Mark an item as ForSale by calling function sellItem()
-    //     let tx = await SupplyChain.sellItem(upc)
-    //     // Watch the emitted event ForSale()
-    //     truffleAssert.eventEmitted(tx, 'ForSale', (eventEmit) => {
-    //         return eventEmit = true
-    //     })
+        // Mark an item as ForSale by calling function sellItem()
+        let tx1 = await supplyChain.harvestItem(upc, originFarmerID, originFarmName, originFarmInformation, originFarmLatitude, originFarmLongitude, productNotes)
+        let tx2 = await supplyChain.processItem(upc, { from: originFarmerID })
+        let tx3 = await supplyChain.packItem(upc, { from: originFarmerID })
+        let tx = await supplyChain.sellItem(upc, productPrice, { from: originFarmerID })
+        // Watch the emitted event ForSale()
+        truffleAssert.eventEmitted(tx, 'ForSale', (ev) => {
+            return eventEmit = true
+        })
 
-    //     // Retrieve the just now saved item from blockchain by calling function fetchItem()
-    //     const resultBufferTwo = await supplyChain.fetchItemBufferTwo.call(upc)
+        // Retrieve the just now saved item from blockchain by calling function fetchItem()
+        const resultBufferTwo = await supplyChain.fetchItemBufferTwo.call(upc)
 
-    //     // Verify the result set
-    //     assert.equal(resultBufferTwo[5], 3, 'Error: Invalid item State')
-    //     assert.equal(eventEmit, true, 'Invalid event emitted')
-    // })
+        // Verify the result set
+        assert.equal(resultBufferTwo[5], 3, 'Error: Invalid item State')
+        assert.equal(eventEmit, true, 'Invalid event emitted')
+    })
 
-    // // 5th Test
-    // it("Testing smart contract function buyItem() that allows a distributor to buy wine", async() => {
-    //     const supplyChain = await SupplyChain.deployed()
+    // 5th Test
+    it("Testing smart contract function buyItem() that allows a distributor to buy wine", async() => {
+        const supplyChain = await SupplyChain.deployed()
         
-    //     // Declare and Initialize a variable for event
-    //     var eventEmit = false
+        // Declare and Initialize a variable for event
+        var eventEmit = false
 
-    //     // Mark an item as Sold by calling function buyItem()
-    //     let tx = await SupplyChain.buyItem(upc)
-    //     // Watch the emitted event Sold()
-    //     truffleAssert.eventEmitted(tx, 'Sold', (eventEmit) => {
-    //         return eventEmit = true
-    //     })
+        // Mark an item as Sold by calling function buyItem()
+        let tx1 = await supplyChain.harvestItem(upc, originFarmerID, originFarmName, originFarmInformation, originFarmLatitude, originFarmLongitude, productNotes)
+        let tx2 = await supplyChain.processItem(upc, { from: originFarmerID })
+        let tx3 = await supplyChain.packItem(upc, { from: originFarmerID })
+        let tx4 = await supplyChain.sellItem(upc, productPrice, { from: originFarmerID })
+        let tx = await supplyChain.buyItem(upc, { from: distributorID, value:  web3.utils.toWei(String(1), "ether")})
+        // let tx = await supplyChain.buyItem(upc)
+        // Watch the emitted event Sold()
+        truffleAssert.eventEmitted(tx, 'Sold', (ev) => {
+            return eventEmit = true
+        })
 
-    //     // Retrieve the just now saved item from blockchain by calling function fetchItem()
-    //     const resultBufferTwo = await supplyChain.fetchItemBufferTwo.call(upc)
+        // Retrieve the just now saved item from blockchain by calling function fetchItem()
+        const resultBufferTwo = await supplyChain.fetchItemBufferTwo.call(upc)
 
-    //     // Verify the result set
-    //     assert.equal(resultBufferTwo[5], 4, 'Error: Invalid item State')
-    //     assert.equal(eventEmit, true, 'Invalid event emitted')
-    // })
+        // Verify the result set
+        assert.equal(resultBufferTwo[5], 4, 'Error: Invalid item State')
+        assert.equal(eventEmit, true, 'Invalid event emitted')
+    })
 
-    // // 6th Test
-    // it("Testing smart contract function shipItem() that allows a distributor to ship wine", async() => {
-    //     const supplyChain = await SupplyChain.deployed()
+    // 6th Test
+    it("Testing smart contract function shipItem() that allows a distributor to ship wine", async() => {
+        const supplyChain = await SupplyChain.deployed()
         
-    //     // Declare and Initialize a variable for event
-    //     const eventEmit = false
+        // Declare and Initialize a variable for event
+        var eventEmit = false
         
-    //     // Mark an item as shipped by calling function shipItem()
-    //     let tx = await SupplyChain.shipItem(upc)
-    //     // Watch the emitted event Shipped()
-    //     truffleAssert.eventEmitted(tx, 'Shipped', (eventEmit) => {
-    //         return eventEmit = true
-    //     })
+        // Mark an item as shipped by calling function shipItem()
+        let tx1 = await supplyChain.harvestItem(upc, originFarmerID, originFarmName, originFarmInformation, originFarmLatitude, originFarmLongitude, productNotes)
+        let tx2 = await supplyChain.processItem(upc, { from: originFarmerID })
+        let tx3 = await supplyChain.packItem(upc, { from: originFarmerID })
+        let tx4 = await supplyChain.sellItem(upc, productPrice, { from: originFarmerID })
+        let tx5 = await supplyChain.buyItem(upc, { from: distributorID, value:  web3.utils.toWei(String(1), "ether")})
+        let tx = await supplyChain.shipItem(upc, { from: distributorID })
+        // Watch the emitted event Shipped()
+        truffleAssert.eventEmitted(tx, 'Shipped', (ev) => {
+            return eventEmit = true
+        })
 
-    //     // Retrieve the just now saved item from blockchain by calling function fetchItem()
-    //     const resultBufferTwo = await supplyChain.fetchItemBufferTwo.call(upc)
+        // Retrieve the just now saved item from blockchain by calling function fetchItem()
+        const resultBufferTwo = await supplyChain.fetchItemBufferTwo.call(upc)
 
-    //     // Verify the result set
-    //     assert.equal(resultBufferTwo[5], 5, 'Error: Invalid item State')
-    //     assert.equal(eventEmit, true, 'Invalid event emitted')
-    // })
+        // Verify the result set
+        // assert.equal(resultBufferTwo[5], 5, 'Error: Invalid item State')
+        // assert.equal(eventEmit, true, 'Invalid event emitted')
+    })
 
-    // // 7th Test
-    // it("Testing smart contract function receiveItem() that allows a retailer to mark wine received", async() => {
-    //     const supplyChain = await SupplyChain.deployed()
+    // 7th Test
+    it("Testing smart contract function receiveItem() that allows a retailer to mark wine received", async() => {
+        const supplyChain = await SupplyChain.deployed()
+
+        // Declare and Initialize a variable for event
+        var eventEmit = false
         
-    //     // Declare and Initialize a variable for event
-    //     const eventEmit = false
-        
-    //     // Mark an item as Received by calling function receiveItem()
-    //     let tx = await SupplyChain.receiveItem(upc)
-    //     // Watch the emitted event Received()
-    //     truffleAssert.eventEmitted(tx, 'Received', (eventEmit) => {
-    //         return eventEmit = true
-    //     })
+        // Mark an item as Received by calling function receiveItem()
+        let ret = await supplyChain.addRetailer(retailerID, { from: retailerID })
+        let tx1 = await supplyChain.harvestItem(upc, originFarmerID, originFarmName, originFarmInformation, originFarmLatitude, originFarmLongitude, productNotes)
+        let tx2 = await supplyChain.processItem(upc, { from: originFarmerID })
+        let tx3 = await supplyChain.packItem(upc, { from: originFarmerID })
+        let tx4 = await supplyChain.sellItem(upc, productPrice, { from: originFarmerID })
+        let tx5 = await supplyChain.buyItem(upc, { from: distributorID, value:  web3.utils.toWei(String(1), "ether")})
+        let tx6 = await supplyChain.shipItem(upc, { from: distributorID })
+        let tx = await supplyChain.receiveItem(upc, { from: retailerID })
+        // Watch the emitted event Received()
+        truffleAssert.eventEmitted(tx, 'Received', (ev) => {
+            return eventEmit = true
+        })
 
-    //     // Retrieve the just now saved item from blockchain by calling function fetchItem()
-    //     const resultBufferTwo = await supplyChain.fetchItemBufferTwo.call(upc)
+        // Retrieve the just now saved item from blockchain by calling function fetchItem()
+        const resultBufferTwo = await supplyChain.fetchItemBufferTwo.call(upc)
 
-    //     // Verify the result set
-    //     assert.equal(resultBufferTwo[5], 6, 'Error: Invalid item State')
-    //     assert.equal(eventEmit, true, 'Invalid event emitted')
+        // Verify the result set
+        assert.equal(resultBufferTwo[5], 6, 'Error: Invalid item State')
+        assert.equal(eventEmit, true, 'Invalid event emitted')
              
-    // })
+    })
 
-    // // 8th Test
-    // it("Testing smart contract function purchaseItem() that allows a consumer to purchase wine", async() => {
-    //     const supplyChain = await SupplyChain.deployed()
+    // 8th Test
+    it("Testing smart contract function purchaseItem() that allows a consumer to purchase wine", async() => {
+        const supplyChain = await SupplyChain.deployed()
+
+        // Declare and Initialize a variable for event
+        var eventEmit = false
         
-    //     // Declare and Initialize a variable for event
-    //     const eventEmit = false
+        // Mark an item as Purchased by calling function purchaseItem()
+        let ret = await supplyChain.addRetailer(retailerID, { from: retailerID })
+        let cons = await supplyChain.addConsumer(consumerID, { from: consumerID })
+        let tx1 = await supplyChain.harvestItem(upc, originFarmerID, originFarmName, originFarmInformation, originFarmLatitude, originFarmLongitude, productNotes)
+        let tx2 = await supplyChain.processItem(upc, { from: originFarmerID })
+        let tx3 = await supplyChain.packItem(upc, { from: originFarmerID })
+        let tx4 = await supplyChain.sellItem(upc, productPrice, { from: originFarmerID })
+        let tx5 = await supplyChain.buyItem(upc, { from: distributorID, value:  web3.utils.toWei(String(1), "ether")})
+        let tx6 = await supplyChain.shipItem(upc, { from: distributorID })
+        let tx7 = await supplyChain.receiveItem(upc, { from: retailerID })
+        let tx = await supplyChain.purchaseItem(upc, { from: consumerID })
+        // Watch the emitted event Purchased()
+        truffleAssert.eventEmitted(tx, 'Purchased', (ev) => {
+            return eventEmit = true
+        })
+
+        // Retrieve the just now saved item from blockchain by calling function fetchItem()
+        const resultBufferTwo = await supplyChain.fetchItemBufferTwo.call(upc)
+
+        // Verify the result set
+        assert.equal(resultBufferTwo[5], 7, 'Error: Invalid item State')
+        assert.equal(eventEmit, true, 'Invalid event emitted')
+    })
+
+    // 9th Test
+    it("Testing smart contract function fetchItemBufferOne() that allows anyone to fetch item details from blockchain", async() => {
+        const supplyChain = await SupplyChain.deployed()
+
+        // Retrieve the just now saved item from blockchain by calling function fetchItem()
+        let tx1 = await supplyChain.harvestItem(upc, originFarmerID, originFarmName, originFarmInformation, originFarmLatitude, originFarmLongitude, productNotes)
+        const resultFetch1 = await supplyChain.fetchItemBufferOne.call(upc)
         
-    //     // Mark an item as Purchased by calling function purchaseItem()
-    //     let tx = await SupplyChain.purchaseItem(upc)
-    //     // Watch the emitted event Purchased()
-    //     truffleAssert.eventEmitted(tx, 'Purchased', (eventEmit) => {
-    //         return eventEmit = true
-    //     })
+        // Verify the result set:
+        assert.equal(resultFetch1[0], sku, 'Error: Invalid item SKU')
+        assert.equal(resultFetch1[1], upc, 'Error: Invalid item UPC')
+        assert.equal(resultFetch1[2], ownerID, 'Error: Missing or Invalid ownerID')
+        assert.equal(resultFetch1[3], originFarmerID, 'Error: Missing or Invalid originFarmerID')
+        assert.equal(resultFetch1[4], originFarmName, 'Error: Missing or Invalid originFarmName')
+        assert.equal(resultFetch1[5], originFarmInformation, 'Error: Missing or Invalid originFarmInformation')
+        assert.equal(resultFetch1[6], originFarmLatitude, 'Error: Missing or Invalid originFarmLatitude')
+        assert.equal(resultFetch1[7], originFarmLongitude, 'Error: Missing or Invalid originFarmLongitude')
+    })
 
-    //     // Retrieve the just now saved item from blockchain by calling function fetchItem()
-    //     const resultBufferTwo = await supplyChain.fetchItemBufferTwo.call(upc)
+    // 10th Test
+    it("Testing smart contract function fetchItemBufferTwo() that allows anyone to fetch item details from blockchain", async() => {
+        const supplyChain = await SupplyChain.deployed()
 
-    //     // Verify the result set
-    //     assert.equal(resultBufferTwo[5], 7, 'Error: Invalid item State')
-    //     assert.equal(eventEmit, true, 'Invalid event emitted')
-    // })
-
-    // // 9th Test
-    // it("Testing smart contract function fetchItemBufferOne() that allows anyone to fetch item details from blockchain", async() => {
-    //     const supplyChain = await SupplyChain.deployed()
-
-    //     // Retrieve the just now saved item from blockchain by calling function fetchItem()
-    //     const resultFetch1 = await supplyChain.fetchItemBufferOne.call(upc)
+        // Retrieve the just now saved item from blockchain by calling function fetchItem()
+        let tx1 = await supplyChain.harvestItem(upc, originFarmerID, originFarmName, originFarmInformation, originFarmLatitude, originFarmLongitude, productNotes)
+        const resultFetch2 = await supplyChain.fetchItemBufferTwo.call(upc)
         
-    //     // Verify the result set:
-    //     // assert.equal(resultFetch1[0], sku, 'Error: Invalid item SKU')
-    //     assert.equal(resultFetch1[1], upc, 'Error: Invalid item UPC')
-    //     assert.equal(resultFetch1[2], ownerID, 'Error: Missing or Invalid ownerID')
-    //     assert.equal(resultFetch1[3], originFarmerID, 'Error: Missing or Invalid originFarmerID')
-    //     assert.equal(resultFetch1[4], originFarmName, 'Error: Missing or Invalid originFarmName')
-    //     assert.equal(resultFetch1[5], originFarmInformation, 'Error: Missing or Invalid originFarmInformation')
-    //     assert.equal(resultFetch1[6], originFarmLatitude, 'Error: Missing or Invalid originFarmLatitude')
-    //     assert.equal(resultFetch1[7], originFarmLongitude, 'Error: Missing or Invalid originFarmLongitude')
-    // })
-
-    // // 10th Test
-    // it("Testing smart contract function fetchItemBufferTwo() that allows anyone to fetch item details from blockchain", async() => {
-    //     const supplyChain = await SupplyChain.deployed()
-
-    //     // Retrieve the just now saved item from blockchain by calling function fetchItem()
-    //     const resultFetch2 = await supplyChain.fetchItemBufferTwo.call(upc)
-        
-    //     // Verify the result set:
-    //     // assert.equal(resultFetch2[0],sku, 'Error: Invalid item SKU')
-    //     assert.equal(resultFetch2[1],upc, 'Error: Invalid item UPC')
-    //     assert.equal(resultFetch2[2],productID, 'Error: Invalid product ID')
-    //     assert.equal(resultFetch2[3],productNotes, 'Error: wrong product Notes')
-    //     assert.equal(resultFetch2[4],productPrice, 'Error: wrong product Price')
-    //     assert.equal(resultFetch2[5],7, 'Invalid event emitted')
-    //     assert.equal(resultFetch2[6],distributorID, 'Error: Invalid distributor ID')
-    //     assert.equal(resultFetch2[7],retailerID, 'Error: Invalid retailer ID')
-    //     assert.equal(resultFetch2[8],consumerID, 'Error: Invalid consumer ID')
-    // })
+        // Verify the result set:
+        assert.equal(resultFetch2[0],sku, 'Error: Invalid item SKU')
+        assert.equal(resultFetch2[1],upc, 'Error: Invalid item UPC')
+        assert.equal(resultFetch2[2],productID, 'Error: Invalid product ID')
+        assert.equal(resultFetch2[3],productNotes, 'Error: wrong product Notes')
+        assert.equal(resultFetch2[4],productPrice, 'Error: wrong product Price')
+        assert.equal(resultFetch2[5],7, 'Invalid event emitted')
+        assert.equal(resultFetch2[6],distributorID, 'Error: Invalid distributor ID')
+        assert.equal(resultFetch2[7],retailerID, 'Error: Invalid retailer ID')
+        assert.equal(resultFetch2[8],consumerID, 'Error: Invalid consumer ID')
+    })
 
 });
 
