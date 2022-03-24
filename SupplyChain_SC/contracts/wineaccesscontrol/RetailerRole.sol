@@ -32,7 +32,7 @@ contract RetailerRole {
   }
 
   // Define a function 'addRetailer' that adds this role
-  function addRetailer(address account) public onlyRetailer {
+  function addRetailer(address account) public {
     _addRetailer(account);
   }
 
