@@ -84,7 +84,7 @@ contract('SupplyChain', function(accounts) {
 
         // Mark an item as Processed by calling function processtItem()
         await supplyChain.addFarmer(originFarmerID);
-        let tx1 = await supplyChain.harvestItem(upc, originFarmerID, originFarmName, originFarmInformation, originFarmLatitude, originFarmLongitude, productNotes)
+        // let tx1 = await supplyChain.harvestItem(upc, originFarmerID, originFarmName, originFarmInformation, originFarmLatitude, originFarmLongitude, productNotes)
         let tx = await supplyChain.processItem(upc, { from: originFarmerID })
         // Watch the emitted event Processed()
         truffleAssert.eventEmitted(tx, 'Processed', (ev) => {
@@ -107,8 +107,8 @@ contract('SupplyChain', function(accounts) {
         var eventEmit = false
         
         // Mark an item as Packed by calling function packItem()
-        let tx1 = await supplyChain.harvestItem(upc, originFarmerID, originFarmName, originFarmInformation, originFarmLatitude, originFarmLongitude, productNotes)
-        let tx2 = await supplyChain.processItem(upc, { from: originFarmerID })
+        // let tx1 = await supplyChain.harvestItem(upc, originFarmerID, originFarmName, originFarmInformation, originFarmLatitude, originFarmLongitude, productNotes)
+        // let tx2 = await supplyChain.processItem(upc, { from: originFarmerID })
         let tx = await supplyChain.packItem(upc, { from: originFarmerID })
         // Watch the emitted event Packed()
         truffleAssert.eventEmitted(tx, 'Packed', (ev) => {
@@ -132,9 +132,9 @@ contract('SupplyChain', function(accounts) {
         var eventEmit = false
         
         // Mark an item as ForSale by calling function sellItem()
-        let tx1 = await supplyChain.harvestItem(upc, originFarmerID, originFarmName, originFarmInformation, originFarmLatitude, originFarmLongitude, productNotes)
-        let tx2 = await supplyChain.processItem(upc, { from: originFarmerID })
-        let tx3 = await supplyChain.packItem(upc, { from: originFarmerID })
+        // let tx1 = await supplyChain.harvestItem(upc, originFarmerID, originFarmName, originFarmInformation, originFarmLatitude, originFarmLongitude, productNotes)
+        // let tx2 = await supplyChain.processItem(upc, { from: originFarmerID })
+        // let tx3 = await supplyChain.packItem(upc, { from: originFarmerID })
         let tx = await supplyChain.sellItem(upc, productPrice, { from: originFarmerID })
         // Watch the emitted event ForSale()
         truffleAssert.eventEmitted(tx, 'ForSale', (ev) => {
@@ -157,12 +157,12 @@ contract('SupplyChain', function(accounts) {
         var eventEmit = false
 
         // Mark an item as Sold by calling function buyItem()
-        let tx1 = await supplyChain.harvestItem(upc, originFarmerID, originFarmName, originFarmInformation, originFarmLatitude, originFarmLongitude, productNotes)
-        let tx2 = await supplyChain.processItem(upc, { from: originFarmerID })
-        let tx3 = await supplyChain.packItem(upc, { from: originFarmerID })
-        let tx4 = await supplyChain.sellItem(upc, productPrice, { from: originFarmerID })
+        let dist = await supplyChain.addDistributor(distributorID, { from: distributorID })
+        // let tx1 = await supplyChain.harvestItem(upc, originFarmerID, originFarmName, originFarmInformation, originFarmLatitude, originFarmLongitude, productNotes)
+        // let tx2 = await supplyChain.processItem(upc, { from: originFarmerID })
+        // let tx3 = await supplyChain.packItem(upc, { from: originFarmerID })
+        // let tx4 = await supplyChain.sellItem(upc, productPrice, { from: originFarmerID })
         let tx = await supplyChain.buyItem(upc, { from: distributorID, value:  web3.utils.toWei(String(1), "ether")})
-        // let tx = await supplyChain.buyItem(upc)
         // Watch the emitted event Sold()
         truffleAssert.eventEmitted(tx, 'Sold', (ev) => {
             return eventEmit = true
@@ -184,11 +184,13 @@ contract('SupplyChain', function(accounts) {
         var eventEmit = false
         
         // Mark an item as shipped by calling function shipItem()
-        let tx1 = await supplyChain.harvestItem(upc, originFarmerID, originFarmName, originFarmInformation, originFarmLatitude, originFarmLongitude, productNotes)
-        let tx2 = await supplyChain.processItem(upc, { from: originFarmerID })
-        let tx3 = await supplyChain.packItem(upc, { from: originFarmerID })
-        let tx4 = await supplyChain.sellItem(upc, productPrice, { from: originFarmerID })
-        let tx5 = await supplyChain.buyItem(upc, { from: distributorID, value:  web3.utils.toWei(String(1), "ether")})
+        // let dist = await supplyChain.addDistributor(distributorID, { from: distributorID })
+        let ret = await supplyChain.addRetailer(retailerID, { from: retailerID })
+        // let tx1 = await supplyChain.harvestItem(upc, originFarmerID, originFarmName, originFarmInformation, originFarmLatitude, originFarmLongitude, productNotes)
+        // let tx2 = await supplyChain.processItem(upc, { from: originFarmerID })
+        // let tx3 = await supplyChain.packItem(upc, { from: originFarmerID })
+        // let tx4 = await supplyChain.sellItem(upc, productPrice, { from: originFarmerID })
+        // let tx5 = await supplyChain.buyItem(upc, { from: distributorID, value:  web3.utils.toWei(String(1), "ether")})
         let tx = await supplyChain.shipItem(upc, { from: distributorID })
         // Watch the emitted event Shipped()
         truffleAssert.eventEmitted(tx, 'Shipped', (ev) => {
@@ -199,8 +201,8 @@ contract('SupplyChain', function(accounts) {
         const resultBufferTwo = await supplyChain.fetchItemBufferTwo.call(upc)
 
         // Verify the result set
-        // assert.equal(resultBufferTwo[5], 5, 'Error: Invalid item State')
-        // assert.equal(eventEmit, true, 'Invalid event emitted')
+        assert.equal(resultBufferTwo[5], 5, 'Error: Invalid item State')
+        assert.equal(eventEmit, true, 'Invalid event emitted')
     })
 
     // 7th Test
@@ -211,13 +213,14 @@ contract('SupplyChain', function(accounts) {
         var eventEmit = false
         
         // Mark an item as Received by calling function receiveItem()
-        let ret = await supplyChain.addRetailer(retailerID, { from: retailerID })
-        let tx1 = await supplyChain.harvestItem(upc, originFarmerID, originFarmName, originFarmInformation, originFarmLatitude, originFarmLongitude, productNotes)
-        let tx2 = await supplyChain.processItem(upc, { from: originFarmerID })
-        let tx3 = await supplyChain.packItem(upc, { from: originFarmerID })
-        let tx4 = await supplyChain.sellItem(upc, productPrice, { from: originFarmerID })
-        let tx5 = await supplyChain.buyItem(upc, { from: distributorID, value:  web3.utils.toWei(String(1), "ether")})
-        let tx6 = await supplyChain.shipItem(upc, { from: distributorID })
+        // let dist = await supplyChain.addDistributor(distributorID, { from: distributorID })
+        // let ret = await supplyChain.addRetailer(retailerID, { from: retailerID })
+        // let tx1 = await supplyChain.harvestItem(upc, originFarmerID, originFarmName, originFarmInformation, originFarmLatitude, originFarmLongitude, productNotes)
+        // let tx2 = await supplyChain.processItem(upc, { from: originFarmerID })
+        // let tx3 = await supplyChain.packItem(upc, { from: originFarmerID })
+        // let tx4 = await supplyChain.sellItem(upc, productPrice, { from: originFarmerID })
+        // let tx5 = await supplyChain.buyItem(upc, { from: distributorID, value:  web3.utils.toWei(String(1), "ether")})
+        // let tx6 = await supplyChain.shipItem(upc, { from: distributorID })
         let tx = await supplyChain.receiveItem(upc, { from: retailerID })
         // Watch the emitted event Received()
         truffleAssert.eventEmitted(tx, 'Received', (ev) => {
@@ -241,15 +244,16 @@ contract('SupplyChain', function(accounts) {
         var eventEmit = false
         
         // Mark an item as Purchased by calling function purchaseItem()
-        let ret = await supplyChain.addRetailer(retailerID, { from: retailerID })
+        // let dist = await supplyChain.addDistributor(distributorID, { from: distributorID })
+        // let ret = await supplyChain.addRetailer(retailerID, { from: retailerID })
         let cons = await supplyChain.addConsumer(consumerID, { from: consumerID })
-        let tx1 = await supplyChain.harvestItem(upc, originFarmerID, originFarmName, originFarmInformation, originFarmLatitude, originFarmLongitude, productNotes)
-        let tx2 = await supplyChain.processItem(upc, { from: originFarmerID })
-        let tx3 = await supplyChain.packItem(upc, { from: originFarmerID })
-        let tx4 = await supplyChain.sellItem(upc, productPrice, { from: originFarmerID })
-        let tx5 = await supplyChain.buyItem(upc, { from: distributorID, value:  web3.utils.toWei(String(1), "ether")})
-        let tx6 = await supplyChain.shipItem(upc, { from: distributorID })
-        let tx7 = await supplyChain.receiveItem(upc, { from: retailerID })
+        // let tx1 = await supplyChain.harvestItem(upc, originFarmerID, originFarmName, originFarmInformation, originFarmLatitude, originFarmLongitude, productNotes)
+        // let tx2 = await supplyChain.processItem(upc, { from: originFarmerID })
+        // let tx3 = await supplyChain.packItem(upc, { from: originFarmerID })
+        // let tx4 = await supplyChain.sellItem(upc, productPrice, { from: originFarmerID })
+        // let tx5 = await supplyChain.buyItem(upc, { from: distributorID, value:  web3.utils.toWei(String(1), "ether")})
+        // let tx6 = await supplyChain.shipItem(upc, { from: distributorID })
+        // let tx7 = await supplyChain.receiveItem(upc, { from: retailerID })
         let tx = await supplyChain.purchaseItem(upc, { from: consumerID })
         // Watch the emitted event Purchased()
         truffleAssert.eventEmitted(tx, 'Purchased', (ev) => {
@@ -269,7 +273,7 @@ contract('SupplyChain', function(accounts) {
         const supplyChain = await SupplyChain.deployed()
 
         // Retrieve the just now saved item from blockchain by calling function fetchItem()
-        let tx1 = await supplyChain.harvestItem(upc, originFarmerID, originFarmName, originFarmInformation, originFarmLatitude, originFarmLongitude, productNotes)
+        // let tx1 = await supplyChain.harvestItem(upc, originFarmerID, originFarmName, originFarmInformation, originFarmLatitude, originFarmLongitude, productNotes)
         const resultFetch1 = await supplyChain.fetchItemBufferOne.call(upc)
         
         // Verify the result set:
@@ -288,7 +292,7 @@ contract('SupplyChain', function(accounts) {
         const supplyChain = await SupplyChain.deployed()
 
         // Retrieve the just now saved item from blockchain by calling function fetchItem()
-        let tx1 = await supplyChain.harvestItem(upc, originFarmerID, originFarmName, originFarmInformation, originFarmLatitude, originFarmLongitude, productNotes)
+        // let tx1 = await supplyChain.harvestItem(upc, originFarmerID, originFarmName, originFarmInformation, originFarmLatitude, originFarmLongitude, productNotes)
         const resultFetch2 = await supplyChain.fetchItemBufferTwo.call(upc)
         
         // Verify the result set:
