@@ -1,6 +1,6 @@
 const HDwalletProvider = require('truffle-hdwallet-provider');
 const mnemonic = "< Metamask seed phrase >";
-const EndPt = "< Infura Rinkeby Endpoint>";
+const EndPt = "https://rinkeby.infura.io/v3/cc478b18f6254d618252b4b3b1625c85";
 
 module.exports = {
   networks: {
