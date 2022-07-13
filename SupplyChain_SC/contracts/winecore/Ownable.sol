@@ -1,5 +1,4 @@
 // SPDX-License-Identifier: MIT
-// pragma solidity >=0.4.24;
 pragma solidity >=0.5.16;
 
 /// Provides basic authorization control
@@ -16,9 +15,9 @@ abstract contract Ownable {
     }
 
     /// Look up the address of the owner
-    // function owner() public view returns (address) {
-    //     return origOwner;
-    // }
+    function owner() public view returns (address) {
+        return origOwner;
+    }
 
     /// Define a function modifier 'onlyOwner'
     modifier onlyOwner() virtual{
