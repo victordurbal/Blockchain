@@ -16,7 +16,7 @@ import "../winecore/Ownable.sol";
 contract SupplyChain is FarmerRole, RetailerRole, DistributorRole, ConsumerRole, Ownable{
 
   // Define 'owner'
-  address owner;
+  // address owner; // owner is define in ownable
 
   // Define a variable called 'upc' for Universal Product Code (UPC)
   uint  upc;
