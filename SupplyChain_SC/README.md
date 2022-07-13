@@ -14,3 +14,7 @@ Ganache v7.0.1
 Solidity v0.5.16 (solc-js)
 Node v16.13.0
 Web3.js v1.7.1)
+
+Why have I used those libraries ?
+
+1) Truffle : Truffle was one of the first framework to appear and thus, documentation is comprehensive and tutorials are easily available
