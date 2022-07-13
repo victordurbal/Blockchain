@@ -17,4 +17,4 @@ Web3.js v1.7.1)
 
 Why have I used those libraries ?
 
-1) Truffle : Truffle was one of the first framework to appear and thus, documentation is comprehensive and tutorials are easily available
+1) Truffle : Truffle was one of the first framework to appear and thus, documentation is comprehensive and tutorials are easily available. On top of that, it also has a big supportive community, thus make debugging and asking questions easy using blogs, medium, discord server, Stackoverflow and Stackexchange. Github repositories are constantly updated and bugs are worked on on very fast pace. The truffle team made automated contract testing which make it easy to test.
