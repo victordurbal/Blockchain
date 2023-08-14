@@ -26,12 +26,16 @@ var Config = async function(accounts) {
     let flightSuretyData = await FlightSuretyData.new();
     let flightSuretyApp = await FlightSuretyApp.new(flightSuretyData.address);
 
+    // await flightSuretyData.setOperatingStatus(true, { from: owner })
+    await flightSuretyData.authorizeCaller(flightSuretyApp.address, { from: owner });
+    await flightSuretyApp.registerAirline(firstAirline, 'Airline Account 1', { from: owner });
+
     // Set a high Ether balance for each test address
     for (let i = 0; i < testAddresses.length; i++) {
         await web3.eth.sendTransaction({
             from: accounts[0],
             to: testAddresses[i],
-            value: web3.utils.toWei("1000000000000000", "ether") // Set the desired Ether balance here
+            //value: web3.utils.toWei("1000000000000000", "ether") // Set the desired Ether balance here
         });
     }
     

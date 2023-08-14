@@ -59,7 +59,7 @@ contract FlightSuretyApp {
     modifier requireIsRegisteredAirline() 
     {
          // Modify to call data contract's status
-        require(isRegisteredAirline(), "Airline is not currently registered on the insurance");  
+        require(isAirlineRegistered(msg.sender), "Airline is not currently registered on the insurance");  
         _;  // All modifiers require an "_" which indicates where the function body will be added
     }
 
@@ -95,9 +95,9 @@ contract FlightSuretyApp {
         return flightSuretyData_app.isOperational();  // Modify to call data contract's status
     }
 
-    function isRegisteredAirline() public view returns(bool) 
+    function isAirlineRegistered(address airlineAdr) public view returns(bool) 
     {
-        return flightSuretyData_app.isRegisteredAirline();  // Modify to call data contract's status
+        return flightSuretyData_app.isAirlineRegistered(airlineAdr);  // Modify to call data contract's status
     }
 
     /********************************************************************************************/
@@ -108,24 +108,25 @@ contract FlightSuretyApp {
     * @dev Add an airline to the registration queue
     *
     */
-    function registerAirline(address airlineAdr, bytes32 airlineName) external returns(bool success, uint256 votes)
+    function registerAirline(address airlineAdr, string calldata airlineName) external returns(bool success, uint256 votes)
     {
-        return flightSuretyData_app.registerAirline(msg.sender,airlineAdr, airlineName);
+        return flightSuretyData_app.registerAirline(msg.sender, airlineAdr, airlineName);
     }
 
    /**
     * @dev Register a future flight for insuring.
     *
     */  
-    function registerFlight(bytes32 flightName, uint8 statusCodeF, uint256 timestampFlght) requireIsRegisteredAirline requireIsOperational external returns(bool success) /** chang-ed from pure to view **/
+    function registerFlight(string calldata flightName, uint8 statusCodeF, uint256 timestampFlght) requireIsRegisteredAirline requireIsOperational external returns(bool success) /** chang-ed from pure to view **/
     {
         Flight memory newFlight = Flight({
             isRegistered: true,
             statusCode: statusCodeF,
             updatedTimestamp: timestampFlght,
             airline: msg.sender}); // each airline includes its own flights
-
-        flights[flightName] = newFlight;
+            
+        bytes32 flightNameBytes = bytes32(uint256(keccak256(abi.encodePacked(flightName))));
+        flights[flightNameBytes] = newFlight;
         return(true);
     }
     
@@ -313,7 +314,7 @@ contract FlightSuretyApp {
 }   
 
 interface FlightSuretyData_contrApp{
-    function registerAirline(address airlineVoter, address airlineAdr, bytes32 airlineName) external returns(bool success, uint256 votes);
+    function registerAirline(address airlineVoter, address airlineAdr, string calldata airlineName) external returns(bool success, uint256 votes);
     function isOperational() external view returns(bool);
-    function isRegisteredAirline() external view returns(bool);
+    function isAirlineRegistered(address airlineAdr) external view returns(bool);
 }

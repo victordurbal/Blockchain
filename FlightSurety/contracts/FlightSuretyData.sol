@@ -104,14 +104,18 @@ contract FlightSuretyData {
         return operational;
     }
 
-    function authorizeCaller(address app_flightSurety) requireContractOwner public returns(bool){
+    function authorizeCaller(address app_flightSurety) requireContractOwner public returns(bool isAuthorized){
         authorizedApp[app_flightSurety] = true;
         return true;
     }
 
-    function isRegisteredAirline() public view returns(bool) 
-    {
-        return officialAirline[msg.sender].isRegistered;
+    function unAuthorizeCaller(address app_flightSurety) requireContractOwner public returns(bool isUnAuthorized){
+        authorizedApp[app_flightSurety] = false;
+        return true;
+    }
+
+    function hasGivenFund(address airlineQuery) public view returns(bool){
+        return officialAirline[airlineQuery].hasGivenFund;
     }
 
     /**
@@ -129,8 +133,6 @@ contract FlightSuretyData {
     /*                                     SMART CONTRACT FUNCTIONS                             */
     /********************************************************************************************/
 
-    
-
     // modify number of voters needed to register an airline
     function setNumberOfVoters(uint256 numbOfAirline) private{
         if (SafeMath.mod(numbOfAirline,2) != 0){
@@ -141,7 +143,7 @@ contract FlightSuretyData {
     }
 
     // check if an airline is registered
-    function isAirlineRegistered(address account) external view returns(bool){
+    function isAirlineRegistered(address account) public view returns(bool){
             require(account != address(0), "'account' must be a valid address.");
             return officialAirline[account].isRegistered;
     }
@@ -151,15 +153,17 @@ contract FlightSuretyData {
     *      Can only be called from FlightSuretyApp contract
     *
     */   
-    function registerAirline(address airlineWhoVoted,address airlineAdr, bytes32 airlineName) external requireIsOperational appIsAuthorized returns(bool success, uint256 votes)
+    function registerAirline(address airlineVoter, address airlineAdr, string calldata airlineName) external requireIsOperational appIsAuthorized returns(bool success, uint256 votes)
     {
-        require(!officialAirline[airlineAdr].isRegistered, "Airline is already registered."); // if the airline is already registered there is no point re-adding it
-        require(!HasVotedForSaidAirline[airlineWhoVoted][airlineAdr], 'Voter already voted to include airline');
+        require(!officialAirline[airlineAdr].isRegistered, "Applicant airline is already registered."); // if the airline is already registered there is no point re-adding it
+        require(officialAirline[airlineVoter].hasGivenFund || airlineVoter == contractOwner, "Voter airline has not yet completed application. It cannot participate to registering.");
+        require(!HasVotedForSaidAirline[airlineVoter][airlineAdr], 'Voter already voted to include applicant airline');
         // only need one vote at first
         voteForAirline[airlineAdr] = voteForAirline[airlineAdr] + 1;
         if(voteForAirline[airlineAdr] >= numVoterMin){
-            officialAirline[airlineAdr] = AirlineProfile({isRegistered: true, airline_name: airlineName, hasGivenFund: false});
-            HasVotedForSaidAirline[airlineWhoVoted][airlineAdr] = true;
+            bytes32 airlineName_bytes = bytes32(uint256(keccak256(abi.encodePacked(airlineName))));
+            officialAirline[airlineAdr] = AirlineProfile({isRegistered: true, airline_name: airlineName_bytes, hasGivenFund: false});
+            HasVotedForSaidAirline[airlineVoter][airlineAdr] = true;
             success = true;
         } else {
             success = false;
@@ -171,19 +175,19 @@ contract FlightSuretyData {
         return (success, voteForAirline[airlineAdr]);
     }
 
-    mapping(bytes32 => mapping(address => uint256)) insurees;
-    mapping(bytes32 => uint256) insureeCorresNum;
-    mapping(uint256 => address) corresTable;
+    mapping(string => mapping(address => uint256)) insurees; // save how much a customer paid for an flight insurance
+    mapping(string => uint256) insureeCorresNum; // count how many insuree in a flight
+    mapping(uint256 => address) corresTable; // each customer address for a insured flight as an associated number
    /**
     * @dev Buy insurance for a flight
     *
     */   
-    function buy(address airlineAdr, bytes32 flight) requireIsOperational external payable returns(bool success)
+    function buy(address airlineAdr, string calldata flight) requireIsOperational external payable returns(bool success)
     {
         require(officialAirline[airlineAdr].isRegistered, "Airline is not registered as part of the insurance.");
         require(officialAirline[airlineAdr].hasGivenFund, "Airline has not yet completed application. You cannot get insured with it yet.");
-        require(insurees[flight][msg.sender] > 0, 'You already purchased insurance for this flight.');
-        require(msg.value < 1 ether, 'You cannot purchase insurance for more than 1 ether.');
+        require(insurees[flight][msg.sender] == 0, 'You already purchased insurance for this flight.');
+        require(msg.value <= 1 ether, 'You cannot purchase insurance for more than 1 ether.');
         payable(airlineAdr).transfer(msg.value);
         insurees[flight][msg.sender] = msg.value;
         insureeCorresNum[flight] = insureeCorresNum[flight] + 1;
@@ -196,20 +200,18 @@ contract FlightSuretyData {
      *  @dev Credits payouts to insurees
     */
     mapping(address => uint) credit_insuree;
-    function creditInsurees(bytes32 flight) external requireIsOperational requireRegisteredAirline returns(bool success)
+    function creditInsurees(string calldata flight) external requireIsOperational requireRegisteredAirline returns(bool success)
     {
         uint256 iCred = 1;
         uint256 creditAmount;
-        for (iCred = 1; insureeCorresNum[flight] > iCred ; iCred++) { // insureeCorresNum provides number of insured people for every flights
-            creditAmount = insurees[flight][corresTable[iCred]]; // find address of insuree via the variable corresTable
+        for (iCred = 1; iCred <= insureeCorresNum[flight] ; iCred++) { // insureeCorresNum provides number of insured people for every flights
+            creditAmount = insurees[flight][corresTable[iCred]]; // get amount insuree bought insurance for, find address of insuree via the variable corresTable
             insurees[flight][corresTable[iCred]] = 0;
-            credit_insuree[corresTable[iCred]] = SafeMath.mul(SafeMath.add(SafeMath.div(3,2),SafeMath.mod(3,2)),creditAmount); // credit 1.5 x the insurance price
+            credit_insuree[corresTable[iCred]] = SafeMath.add(credit_insuree[corresTable[iCred]],SafeMath.div(SafeMath.mul(creditAmount,3),2)); // credit 1.5 x the insurance price
         }
-        
         return true;
     }
     
-
     /**
      *  @dev Transfers eligible payout funds to insuree
      *
