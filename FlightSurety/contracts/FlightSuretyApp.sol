@@ -140,14 +140,19 @@ contract FlightSuretyApp {
         flights[flight].updatedTimestamp = timestamp;
     }
 
+    function getFlightStatus(string calldata flight) external view returns(uint8){
+        bytes32 flightBytes = bytes32(uint256(keccak256(abi.encodePacked(flight))));
+        return flights[flightBytes].statusCode;
+    }
 
     // Generate a request for oracles to fetch flight information
-    function fetchFlightStatus(address airline, bytes32 flight, uint256 timestamp) external
+    function fetchFlightStatus(address airline, string calldata flight, uint256 timestamp) external
     {
+        bytes32 flightBytes = bytes32(uint256(keccak256(abi.encodePacked(flight))));
         uint8 index = getRandomIndex(msg.sender);
 
         // Generate a unique key for storing the request
-        bytes32 key = keccak256(abi.encodePacked(index, airline, flight, timestamp));
+        bytes32 key = keccak256(abi.encodePacked(index, airline, flightBytes, timestamp));
         // oracleResponses[key] = ResponseInfo({requester: msg.sender,
         //                                      isOpen: true
         //                                     });
@@ -165,7 +170,7 @@ contract FlightSuretyApp {
         // newResponseInfo.responses = new Response[](0);
         // oracleResponses[key] = newResponseInfo;
 
-        emit OracleRequest(index, airline, flight, timestamp);
+        emit OracleRequest(index, airline, flightBytes, timestamp);
     } 
 
 
@@ -241,12 +246,16 @@ contract FlightSuretyApp {
     // time of registration (i.e. uninvited oracles are not welcome)
     mapping(bytes32 => mapping(uint8 => uint256)) public responseCounts;
 
-    function submitOracleResponse(uint8 index,address airline, bytes32 flight, uint256 timestamp, uint8 statusCode) external
+    function submitOracleResponse(uint8 index, address airline, string calldata flight, uint256 timestamp, uint8 statusCode) external
     {
         require((oracles[msg.sender].indexes[0] == index) || (oracles[msg.sender].indexes[1] == index) || (oracles[msg.sender].indexes[2] == index), "Index does not match oracle request");
 
-        bytes32 key = keccak256(abi.encodePacked(index, airline, flight, timestamp)); 
+        bytes32 flightBytes = bytes32(uint256(keccak256(abi.encodePacked(flight))));
+        bytes32 key = keccak256(abi.encodePacked(index, airline, flightBytes, timestamp));
         require(oracleResponses[key].isOpen, "Flight or timestamp do not match oracle request");
+
+        // create oracle response
+        // uint8 randomOracleResponse = uint8((getRandomIndex(msg.sender) + 1)/ 2)*10; // solidity floor numbers insteas of rounding, adding 1 prevent not to have number 50
 
         // ResponseInfo storage respOr = oracleResponses[key];
         // respOr.requester = oracleResponses[key].requester;
@@ -260,19 +269,24 @@ contract FlightSuretyApp {
 
         // Information isn't considered verified until at least MIN_RESPONSES
         // oracles respond with the *** same *** information
-        emit OracleReport(airline, flight, timestamp, statusCode);
+        emit OracleReport(airline, flightBytes, timestamp, statusCode);
         if (responseCounts[key][statusCode] >= MIN_RESPONSES) {
 
-            emit FlightStatusInfo(airline, flight, timestamp, statusCode);
+            emit FlightStatusInfo(airline, flightBytes, timestamp, statusCode);
 
             // Handle flight status as appropriate
-            processFlightStatus(flight, timestamp, statusCode);
+            processFlightStatus(flightBytes, timestamp, statusCode);
         }
     }
 
-    function getFlightKey(address airline, bytes32 flight, uint256 timestamp) pure internal returns(bytes32) 
+    function getResponseCounts(bytes32 key, uint8 statusCode) external view returns(uint256){
+        return responseCounts[key][statusCode];
+    }
+
+    function getFlightKey(uint8 index, address airline, string calldata flight, uint256 timestamp) pure external returns(bytes32) 
     {
-        return keccak256(abi.encodePacked(airline, flight, timestamp));
+        bytes32 flightBytes = bytes32(uint256(keccak256(abi.encodePacked(flight))));
+        return keccak256(abi.encodePacked(index, airline, flightBytes, timestamp));
     }
 
     // Returns array of three non-duplicating integers from 0-9

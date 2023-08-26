@@ -14,11 +14,14 @@ import './flightsurety.css';
             console.log(error,result);
             display('Operational Status', 'Check if contract is operational', [ { label: 'Operational Status', error: error, value: result} ]);
         });
-    
+        for(let airlineNum = 0; airlineNum < 3; airlineNum++){
+            displayFlights('Available flights for airline : ', contract.airlinesNames[contract.airlines[airlineNum]], contract.AirlineFlights[contract.airlinesNames[contract.airlines[airlineNum]]]);
+        }
 
         // User-submitted transaction
         DOM.elid('submit-oracle').addEventListener('click', () => {
             let flight = DOM.elid('flight-number').value;
+            let insurePrice = DOM.elid('amount-Insurance').value;
             // Write transaction
             contract.fetchFlightStatus(flight, (error, result) => {
                 display('Oracles', 'Trigger oracles', [ { label: 'Fetch Flight Status', error: error, value: result.flight + ' ' + result.timestamp} ]);
@@ -42,7 +45,16 @@ function display(title, description, results) {
         section.appendChild(row);
     })
     displayDiv.append(section);
+}
 
+function displayFlights(title, airlineName, flights) {
+    let displayDiv = DOM.elid("display-wrapper");
+    let section = DOM.section();
+    section.appendChild(DOM.h2(title + " " + airlineName));
+    section.appendChild(DOM.h5(flights[0]));
+    section.appendChild(DOM.h5(flights[1]));
+    section.appendChild(DOM.h5(flights[2]));
+    displayDiv.append(section);
 }
 
 

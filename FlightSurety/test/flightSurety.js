@@ -6,8 +6,6 @@ var FlightSuretyData = artifacts.require("FlightSuretyData");
 
 contract('Flight Surety Tests', async (accounts) => {
 
-    let flightSuretyData;
-    var config;
     beforeEach('setup contract', async () => {
         config = await Test.Config(accounts);
         await config.flightSuretyData.authorizeCaller(config.flightSuretyApp.address, { from: accounts[0] });

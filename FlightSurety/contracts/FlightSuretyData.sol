@@ -153,7 +153,7 @@ contract FlightSuretyData {
     *      Can only be called from FlightSuretyApp contract
     *
     */   
-    function registerAirline(address airlineVoter, address airlineAdr, string calldata airlineName) external requireIsOperational appIsAuthorized returns(bool success, uint256 votes)
+    function registerAirline(address airlineVoter, address airlineAdr, string calldata airlineName) external requireIsOperational appIsAuthorized returns(bool success, uint256 votes) 
     {
         require(!officialAirline[airlineAdr].isRegistered, "Applicant airline is already registered."); // if the airline is already registered there is no point re-adding it
         require(officialAirline[airlineVoter].hasGivenFund || airlineVoter == contractOwner, "Voter airline has not yet completed application. It cannot participate to registering.");
@@ -253,9 +253,8 @@ contract FlightSuretyData {
     * @dev Fallback function for funding smart contract.
     *
     */
-    fallback() external payable 
+    receive() external payable 
     {
-        require(msg.data.length == 0);
         fund();
     }
 
