@@ -72,12 +72,26 @@ export default class Contract {
             this.flightSuretyData.methods.authorizeCaller(this.appAdress).send({ from: this.owner});
             try{
                 // this.flightSuretyData.methods.registerAirline(this.owner, this.airlines[0], this.airlinesNames[this.airlines[0]]).send({ from: this.owner});
-                this.flightSuretyApp.methods.registerAirline(this.airlines[0], this.airlinesNames[this.airlines[0]]).send({ from: this.owner});
+                // this.flightSuretyApp.methods.registerAirline(this.airlines[0], this.airlinesNames[this.airlines[0]]).send({ from: this.owner});
             }catch(e){
                 console.log('error message is : ' + e);
             }
             callback();
         });
+    }
+
+    getAccounts(){
+        
+    }
+
+    pay(msgSender){
+        let self = this;
+        self.flightSuretyData.methods.pay().call({ from: msgSender});
+    }
+
+    creditAmount(msgSender){
+        let self = this;
+        self.flightSuretyData.methods.insureeCreditAmount().call({ from: msgSender});
     }
 
     isOperational(callback) {
@@ -86,6 +100,14 @@ export default class Contract {
             .isOperational()
             .call({ from: self.owner}, callback);
     }
+
+    insureFlight(airlineAdr, flight,callback) {
+        let self = this;
+
+        self.flightSuretyData.methods
+             .buy()
+             .send(airlineAdr, flight, { from: self.owner}, callback);
+     }
 
     fetchFlightStatus(flight, callback) {
         let self = this;

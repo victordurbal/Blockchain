@@ -23,7 +23,7 @@ contract FlightSuretyData {
     mapping(address => uint32) voteForAirline; // number of vote a wannabe registered airline received
     mapping(address => mapping(address => bool)) HasVotedForSaidAirline; // check if voter has already voted to include airline or not - cannot vote twice
     uint256 private numVoterMin = 1;
-    uint256 private numAirlineReg = 1;
+    uint256 private numAirlineReg = 0; // will be set to 1 during initialisation, when contract owner register first airline
     uint256 private counter = 1;
 
     mapping(address => bool) authorizedApp;
@@ -160,19 +160,23 @@ contract FlightSuretyData {
         require(!HasVotedForSaidAirline[airlineVoter][airlineAdr], 'Voter already voted to include applicant airline');
         // only need one vote at first
         voteForAirline[airlineAdr] = voteForAirline[airlineAdr] + 1;
+        if(numAirlineReg >= 4){
+            setNumberOfVoters(numAirlineReg); // this updates numVoterMin, if there are 4 registered airlines or more, need 50% of airlines to vote the new airline in
+        }
         if(voteForAirline[airlineAdr] >= numVoterMin){
             bytes32 airlineName_bytes = bytes32(uint256(keccak256(abi.encodePacked(airlineName))));
             officialAirline[airlineAdr] = AirlineProfile({isRegistered: true, airline_name: airlineName_bytes, hasGivenFund: false});
             HasVotedForSaidAirline[airlineVoter][airlineAdr] = true;
             success = true;
+            numAirlineReg += 1;
         } else {
             success = false;
         }
-        numAirlineReg += 1;
-        if(numAirlineReg >= 4){
-            setNumberOfVoters(numAirlineReg);
-        }
         return (success, voteForAirline[airlineAdr]);
+    }
+
+    function getNumberRegisteredAirline() external view returns(uint256){
+        return numAirlineReg;
     }
 
     mapping(string => mapping(address => uint256)) insurees; // save how much a customer paid for an flight insurance
@@ -202,6 +206,7 @@ contract FlightSuretyData {
     mapping(address => uint) credit_insuree;
     function creditInsurees(string calldata flight) external requireIsOperational requireRegisteredAirline returns(bool success)
     {
+        require(insureeCorresNum[flight] > 0, 'No customer purchased insurance on this flight.'); // fail fast : if no passenger took insurance for the flight, dismiss
         uint256 iCred = 1;
         uint256 creditAmount;
         for (iCred = 1; iCred <= insureeCorresNum[flight] ; iCred++) { // insureeCorresNum provides number of insured people for every flights
@@ -211,19 +216,31 @@ contract FlightSuretyData {
         }
         return true;
     }
+
+    function insureeHasCredit() external view returns(bool){
+        if(credit_insuree[msg.sender] > 0){
+            return true;
+        }else{
+            return false;
+        }
+    }
+
+    function insureeCreditAmount() external view returns(uint){
+        return credit_insuree[msg.sender];
+    }
     
     /**
      *  @dev Transfers eligible payout funds to insuree
      *
     */
-    function pay() requireIsOperational reEntrancyGuard external payable returns(bool success)
+    function pay() requireIsOperational reEntrancyGuard external payable returns(bool success, uint256 fundPayout)
     {
         require(credit_insuree[msg.sender] > 0, 'There is no fund to withdraw.');
-        uint256 fundPayout = credit_insuree[msg.sender];
+        fundPayout = credit_insuree[msg.sender];
         credit_insuree[msg.sender] = 0;
         payable(msg.sender).transfer(fundPayout);
 
-        return true;
+        return (true, fundPayout);
     }
 
    /**

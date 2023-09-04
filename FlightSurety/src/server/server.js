@@ -1,33 +1,25 @@
-import FlightSuretyApp from '../../build/contracts/FlightSuretyApp.json';
-import Config from './config.json';
-import Web3 from 'web3';
-import express from 'express';
+const FlightSuretyApp = require('../../build/contracts/FlightSuretyApp.json');
+const Config = require('./config.json');
+const Web3 = require('web3');
+const express = require('express');
+const path = require('path');
 
-
-let config = Config['localhost'];
-// let web3 = new Web3(new Web3.providers.WebsocketProvider(config.url.replace('http', 'ws')));
+const config = Config['localhost'];
+// let web3Provider = new Web3.providers.HttpProvider(config.url);
 // let web3Provider = new Web3.providers.WebsocketProvider(config.url.replace('http', 'ws'));
-// web3Provider.on('error', (error) => {
-//     console.error('Web3 provider error:', error);
-// });
-// web3Provider.on('connect', () => {
-//     console.log('Web3 provider connected');
-// });
-// let web3 = new Web3(web3Provider);
-let web3Provider = new Web3.providers.WebsocketProvider(config.url.replace('http', 'ws'));
-// let web3Provider = new Web3.providers.WebsocketProvider("ws://127.0.0.1:8545");
-web3Provider.on('error', (error) => {
-    console.error('Web3 provider error:', error);
-});
-web3Provider.on('connect', () => {
-    console.log('Web3 provider connected');
-});
-web3Provider.on('end', () => {
-    console.log('Web3 provider connection ended');
-});
-let web3 = new Web3(web3Provider);  
+const options = {
+  // Enable auto reconnection
+  reconnect: {
+      auto: true,
+      delay: 5000, // ms
+      maxAttempts: 50,
+      onTimeout: false
+  }
+};
+let web3Provider = new Web3.providers.WebsocketProvider(config.url.replace('http', 'ws'), options) 
+const web3 = new Web3(web3Provider);
 web3.eth.defaultAccount = web3.eth.accounts[0];
-let flightSuretyApp = new web3.eth.Contract(FlightSuretyApp.abi, config.appAddress);
+const flightSuretyApp = new web3.eth.Contract(FlightSuretyApp.abi, config.appAddress);
 
 // change here
 flightSuretyApp.events.OracleRequest({
@@ -38,10 +30,18 @@ flightSuretyApp.events.OracleRequest({
 });
 
 const app = express();
-app.get('/api', (req, res) => {
-    res.send({
-      message: 'An API for use with your Dapp!'
-    })
-})
+const server = app.listen(3000, () => {
+  const port = server.address().port;
+  console.log(`Server is running on port ${port}`);
+});
 
-export default app;
+app.get('/api', (req, res) => {
+  // res.send({
+  //   message: 'An API for use with your Dapp!',
+  // });
+  const filePath = path.join(__dirname, 'index.html');
+  res.sendFile(filePath);
+});
+// http://localhost:3000/api
+
+module.exports = app;
