@@ -1,6 +1,14 @@
 
 import http from 'http'
 import app from './server'
+// import Server from './server';
+
+// (async() => {
+
+//   let server = new Server('localhost', () => {
+
+//   });
+// })();
 
 const server = http.createServer(app)
 let currentApp = app

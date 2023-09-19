@@ -2,13 +2,25 @@ import DOM from './dom';
 import Contract from './contract';
 import './flightsurety.css';
 
-
 (async() => {
 
     let result = null;
 
     let contract = new Contract('localhost', () => {
         
+        // console.log('NUMBER OF ACCOUNT ' + this.web3.eth.accounts.length);
+        // console.log(this.web3.personal.newAccount());
+        // console.log(this.web3.eth.accounts.length);
+
+        function findKeyByValue(obj, value) {
+            for (let key in obj) {
+              if (obj[key] === value) {
+                return key;
+              }
+            }
+            return null; // Return null if the value is not found
+          }
+
         DOM.elid("ConnectedAccount").innerHTML = 'Not connected';
         // Read transaction
         contract.isOperational((error, result) => {
@@ -21,37 +33,45 @@ import './flightsurety.css';
         window.ethereum.on('accountsChanged', function (accounts) {
             // arrayFlight_WantInsured.push(accounts[0]);
             custWant_FlightInsured = accounts[0];
-            console.log('aaaddreeesfsdbcsjb is ' + custWant_FlightInsured)
+            // console.log('aaaddreeesfsdbcsjb is ' + custWant_FlightInsured)
             DOM.elid("ConnectedAccount").innerHTML = custWant_FlightInsured;
         })
 
         // User-submitted transaction - buy insurance
         DOM.elid('buy-insurance').addEventListener('click', () => {
-            let flightIns = DOM.elid('flight-numberInsurance').value;
             let insurePrice = DOM.elid('amount-Insurance').value;
-            // console.log('Flight is : ' + flightIns);
+            const selectElement = DOM.elid('flight-numberInsurance');
+            let flightIns = selectElement.value;
+            const selectedOption = selectElement.options[selectElement.selectedIndex];
+            const optgroupElement = selectedOption.parentElement;
+            const companyId = optgroupElement.getAttribute('id')
+            console.log('Company name is : ' + companyId);
             if(flightIns === ''){
                 alert('Please select a flight.');
             }else if(insurePrice == 0){
                 alert('Value must be greater than 0.');
             }else{
+                let addressAirline = findKeyByValue(contract.airlinesNames, companyId);
+                // console.log('airline address is : ' + addressAirline);
                 // displayFlightsInsured('Flight Insurance ', 'Insurance', [ { label: 'Flight insured', value: flightIns + ' - for ' + insurePrice + ' ether'} ]);
                 if(!arrayFlight_Insured.hasOwnProperty(custWant_FlightInsured)){
                     arrayFlight_Insured[custWant_FlightInsured] = {};
                 }
                 arrayFlight_Insured[custWant_FlightInsured][flightIns] = insurePrice;
                 const keys = Object.keys(arrayFlight_Insured);
+                // contract.insureFlight(addressAirline, insurePrice, custWant_FlightInsured, (error, result) => {
+                //     display('Flight ', 'Insurance', [ { label: 'Flight insured', error: error, value: result.flightIns + ' ' + result.timestamp} ]);
+                // });
+                contract.isAuth();
                 updateTable([custWant_FlightInsured.toString(),flightIns,insurePrice]);
             }
             // Write transaction
-            // contract.insureFlight(flightIns, value: insurePrice, (error, result) => {
-            //     display('Flight ', 'Insurance', [ { label: 'Flight insured', error: error, value: result.flightIns + ' ' + result.timestamp} ]);
-            // });
+            
         })
 
         function updateTable(inputTable) { // addressCustomer,flightName,insurancePrice
             // creates a <table> element and a <tbody> element
-            const tbl = DOM.elid("showCustomer");
+            // const tbl = DOM.elid("showCustomer");
             const tblBody = DOM.elid("body");
             // creating all cells
             var lengthBdy = document.getElementById("body").rows.length;

@@ -1,5 +1,6 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.19;
+// pragma solidity ^0.8.13;
 
 import "../node_modules/openzeppelin-solidity/contracts/utils/math/SafeMath.sol";
 
@@ -118,6 +119,10 @@ contract FlightSuretyData {
         return officialAirline[airlineQuery].hasGivenFund;
     }
 
+    function isAppAuthorized(address app_flightSurety) public view returns(bool isAuthorized){
+        return authorizedApp[app_flightSurety];
+    }
+
     /**
     * @dev Sets contract operations on/off
     *
@@ -225,7 +230,7 @@ contract FlightSuretyData {
         }
     }
 
-    function insureeCreditAmount() external view returns(uint){
+    function displayInsureeCreditAmount() external view returns(uint){
         return credit_insuree[msg.sender];
     }
     

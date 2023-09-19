@@ -1,5 +1,6 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.19;
+// pragma solidity ^0.8.13;
 
 // It's important to avoid vulnerabilities due to numeric overflow bugs
 // OpenZeppelin's SafeMath library, when used correctly, protects agains such bugs
@@ -35,7 +36,7 @@ contract FlightSuretyApp {
         uint256 updatedTimestamp;        
         address airline;
     }
-    mapping(bytes32 => Flight) private flights;
+    mapping(bytes32 => Flight) flights; // private
  
     /********************************************************************************************/
     /*                                       FUNCTION MODIFIERS                                 */
@@ -117,17 +118,24 @@ contract FlightSuretyApp {
     * @dev Register a future flight for insuring.
     *
     */  
-    function registerFlight(string calldata flightName, uint8 statusCodeF, uint256 timestampFlght) requireIsRegisteredAirline requireIsOperational external returns(bool success) /** chang-ed from pure to view **/
-    {
-        Flight memory newFlight = Flight({
-            isRegistered: true,
-            statusCode: statusCodeF,
-            updatedTimestamp: timestampFlght,
-            airline: msg.sender}); // each airline includes its own flights
+    function registerFlight(string calldata flightName, uint8 statusCodeF, uint256 timestampFlght) external returns(bool success) /** chang-ed from pure to view **/
+    { //requireIsRegisteredAirline requireIsOperational
+        // Flight memory newFlight = Flight({
+        //     isRegistered: true,
+        //     statusCode: statusCodeF,
+        //     updatedTimestamp: timestampFlght,
+        //     airline: msg.sender}); // each airline includes its own flights
             
         bytes32 flightNameBytes = bytes32(uint256(keccak256(abi.encodePacked(flightName))));
+        // flights[flightNameBytes] = newFlight;
+
+        Flight memory newFlight = flights[flightNameBytes];
+        newFlight.isRegistered = true;
+        newFlight.statusCode = statusCodeF;
+        newFlight.updatedTimestamp = timestampFlght;
+        newFlight.airline = msg.sender;
         flights[flightNameBytes] = newFlight;
-        return(true);
+        return true;
     }
     
    /**
@@ -143,6 +151,16 @@ contract FlightSuretyApp {
     function getFlightStatus(string calldata flight) external view returns(uint8){
         bytes32 flightBytes = bytes32(uint256(keccak256(abi.encodePacked(flight))));
         return flights[flightBytes].statusCode;
+    }
+
+    function isFlightRegistered(string calldata flightName) external view returns(bool){
+        bytes32 flightNameBytes = bytes32(uint256(keccak256(abi.encodePacked(flightName))));
+        return flights[flightNameBytes].isRegistered;
+    }
+
+    function getFlightAirline(string calldata flightName) external view returns(address){
+        bytes32 flightNameBytes = bytes32(uint256(keccak256(abi.encodePacked(flightName))));
+        return flights[flightNameBytes].airline;
     }
 
     // Generate a request for oracles to fetch flight information
@@ -168,7 +186,7 @@ contract FlightSuretyApp {
         newResponseInfo.requester = msg.sender;
         newResponseInfo.isOpen = true;
         // newResponseInfo.responses = new Response[](0);
-        // oracleResponses[key] = newResponseInfo;
+        oracleResponses[key] = newResponseInfo;
 
         emit OracleRequest(index, airline, flightBytes, timestamp);
     } 

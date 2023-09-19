@@ -20,6 +20,13 @@
 
     <script src="https://cdnjs.cloudflare.com/ajax/libs/web3/1.7.4-rc.1/web3.min.js"></script>
     <script>
+        // import Contract from './contract';
+
+        // function getAirline(numAirline){(async() => {let contract = new Contract('localhost', () => {
+        //             console.log(contract.airlines[numAirline]);
+        //         });
+            
+        //     })()};
         /* To connect using MetaMask */
         async function connect() {
             if (window.ethereum) {
@@ -87,17 +94,17 @@
             <label class="form">Buy insurance for flight : </label>
             <select name="flights-list" id="flight-numberInsurance">
                 <option value="">--Please choose a flight--</option>
-                <optgroup label="Ryanair"></optgroup>
+                <optgroup label="Ryanair" id="Ryanair" value="Ryanair">
                     <option value="R11AIR">R11AIR</option>
                     <option value="R12AIR">R12AIR</option>
                     <option value="R13AIR">R13AIR</option>
                 </optgroup>
-                <optgroup label="Easyjet">
+                <optgroup label="Easyjet" id="Easyjet" value="Easyjet">
                     <option value="E24FLY">E24FLY</option>
                     <option value="E25FLY">E25FLY</option>
                     <option value="E26FLY">E26FLY</option>
                 </optgroup>
-                <optgroup label="Lufthansa">
+                <optgroup label="Lufthansa" id="Lufthansa" value="Lufthansa">
                     <option value="L37SKY">L37SKY</option>
                     <option value="L38SKY">L38SKY</option>
                     <option value="L39SKY">L39SKY</option>
@@ -142,6 +149,11 @@
             <label class="form">Show table of customer purchase</label>
             <btn class="btn btn-primary" id="tableShow" onclick="toggle(this);">Show table</btn>
         </div>
+
+        <!-- <div class="row top-20">
+            <label class="form">Show table of customer purchase</label>
+            <btn class="btn btn-primary" id="getAirline" onclick="getAirline(0)">Print Airline</btn>
+        </div> -->
 
         <div class="row top-20">
             <label class="form">Credit from insured delayed flights : </label>

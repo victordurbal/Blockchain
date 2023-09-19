@@ -1,2 +1,0 @@
-# Blockchain
-Udacity nanodegree course
