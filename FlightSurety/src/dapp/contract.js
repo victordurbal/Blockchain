@@ -31,12 +31,12 @@ export default class Contract {
         console.log('NUMBER OF ACCOUNT ' + this.web3.eth.accounts.length);
     }
 
-    getBalance(){
-        this.web3.eth.getBalance('0x627306090abaB3A6e1400e9345bC60c78a8BEf57', (error, balance) => {
+    getBalance(account){
+        this.web3.eth.getBalance(account, (error, balance) => {
             if (error) {
                 console.error(error);
             } else {
-                console.log(`Account ${'0x627306090abaB3A6e1400e9345bC60c78a8BEf57'} has a balance of ${this.web3.utils.fromWei(balance, "ether")} Ether`);
+                console.log(`Account ${account} has a balance of ${this.web3.utils.fromWei(balance, "ether")} Ether`);
             }
         });
     }
@@ -59,7 +59,7 @@ export default class Contract {
                 const accts = await getAccounts();
             
             this.owner = accts[0];
-            console.log(this.owner);
+            console.log('Owner address is : ' + this.owner);
             let counter = 1;
             
             while(this.airlines.length < 5) {
@@ -99,19 +99,17 @@ export default class Contract {
                     console.log('Transaction hash:', hash);
                 })
                 .on('receipt', function(receipt){
-                    console.log('Transaction receipt auth caller :', receipt);
+                    // console.log('Transaction receipt auth caller :', receipt);
+                    console.log('App authorized.')
                 })
                 .on('error', function(error){
                     console.log('Error:', error);
                 });
-            
-            try{
-                await this.initializeAirline(1);
-            }catch(e){
-            }
 
+            // for initialization, to register airline 0 only should be enough
+            // but it has been demonstrated in truffle test the functions works well
+            // so as simplification, the airlines will be registered here rather than in the app
             for(let iAirline = 0 ; iAirline < 3 ; iAirline++){
-                // let iAirline = 2;
                 let ifRegistered = await this.flightSuretyData.methods.isAirlineRegistered(this.airlines[iAirline]).call();
                 if (!ifRegistered){
                     await this.initializeAirline(iAirline);
@@ -125,31 +123,46 @@ export default class Contract {
                     console.log('Airline ' + this.airlinesNames[this.airlines[iAirline]] + ' already funded the contract.')
                 }
             }
-            for(let iAirline = 0 ; iAirline < 3 ; iAirline++){
-                for(let iFlight = 0 ; iFlight < 3 ; iFlight++){
-                    await this.registerFlight(iAirline,iFlight);
-                }
-            }
-            //http://localhost:8000/#
+
+            this.getBalance(this.owner);
+            // for(let iAirline = 0 ; iAirline < 3 ; iAirline++){
+            //     for(let iFlight = 0 ; iFlight < 3 ; iFlight++){
+                    let iAirline = 0;
+                    let iFlight = 0;
+                    try{
+                        // await this.registerAirlineFlight(iAirline,iFlight);
+                        await this.flightSuretyApp.methods.registerFlight(this.AirlineFlights[this.airlinesNames[this.airlines[iAirline]]][iFlight], 0, 237863).send({ from: this.airlines[iAirline]},function(error, result) {
+                            if (error) {
+                                console.log('Error check :', error);
+                            } else {
+                                console.log('flight ' + flightNumber.toString() + ' registered :', result);
+                            }});
+
+                    }catch(e){
+                        console.log('Error for flight registration is : ' + e)
+                    }
+            //     }
+            // }
+            // //http://localhost:8000/#
 
             await this.flightSuretyApp.methods.isFlightRegistered(this.AirlineFlights[this.airlinesNames[this.airlines[0]]][0]).call(function(error, result) {
                 console.log('2) Flight is registered : ', result);
             });
-            await this.flightSuretyApp.methods.registerFlight('A', 20, 10).call({ from: this.airlines[2]});
-            await this.flightSuretyApp.methods.isFlightRegistered('A').call(function(error, result) {
-                console.log('IS FLIGHT A registered : ', result);
-            });
-            await this.flightSuretyApp.methods.getFlightStatus('A').call(function(error, result) {
-                console.log('Flight STATUS is : ', result);
-            });
-            await this.flightSuretyApp.methods.getFlightAirline('A').call(function(error, result) {
-                console.log('address airline for flight is : ', result.toString());
-            });
+            // await this.flightSuretyApp.methods.registerFlight('A', 20, 10).send({ from: this.airlines[2]});
+            // await this.flightSuretyApp.methods.isFlightRegistered('A').call(function(error, result) {
+            //     console.log('IS FLIGHT A registered : ', result);
+            // });
+            // await this.flightSuretyApp.methods.getFlightStatus('A').call(function(error, result) {
+            //     console.log('Flight STATUS is : ', result);
+            // });
+            // await this.flightSuretyApp.methods.getFlightAirline('A').call(function(error, result) {
+            //     console.log('address airline for flight is : ', result.toString());
+            // });
 
             callback();
         // });
         } catch (error) {
-            console.error('Error:', error);
+            console.error('Error at top level :', error);
         }
     }
 
@@ -193,19 +206,16 @@ export default class Contract {
         });
     }
 
-    async registerFlight(airlineNumber,flightNumber){
+    async registerAirlineFlight(airlineNumber,flightNumber){
         let timestamp = Math.floor(Date.now() / 1000);
         // this.AirlineFlights[this.airlinesNames[this.airlines[airlineNumber]]][flightNumber]
-        await this.flightSuretyApp.methods.registerFlight('A', 20, timestamp).call({ from: this.airlines[airlineNumber]},function(error, result) {
+        console.log('flight is ' + this.AirlineFlights[this.airlinesNames[this.airlines[airlineNumber]]][flightNumber])
+        await this.flightSuretyApp.methods.registerFlight(this.AirlineFlights[this.airlinesNames[this.airlines[airlineNumber]]][flightNumber], 0, timestamp).send({ from: this.airlines[airlineNumber]},function(error, result) {
         if (error) {
             console.log('Error check :', error);
         } else {
             console.log('flight ' + flightNumber.toString() + ' registered :', result);
         }});
-
-        await this.flightSuretyApp.methods.isFlightRegistered('A').call(function(error, result) {
-            console.log('1) Flight is registered : ', result);
-        });
     }
 
     pay(msgSender){

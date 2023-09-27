@@ -118,7 +118,7 @@ contract FlightSuretyApp {
     * @dev Register a future flight for insuring.
     *
     */  
-    function registerFlight(string calldata flightName, uint8 statusCodeF, uint256 timestampFlght) external returns(bool success) /** chang-ed from pure to view **/
+    function registerFlight(string calldata flightName, uint8 statusCodeF, uint256 timestampFlght) external requireIsRegisteredAirline requireIsOperational returns(bool success) /** chang-ed from pure to view **/
     { //requireIsRegisteredAirline requireIsOperational
         // Flight memory newFlight = Flight({
         //     isRegistered: true,

@@ -16,7 +16,7 @@ const options = {
       onTimeout: false
   }
 };
-let web3Provider = new Web3.providers.WebsocketProvider(config.url.replace('http', 'ws'), options)
+let web3Provider = new Web3.providers.WebsocketProvider(config.url.replace('http', 'ws'), options);
 const web3 = new Web3(web3Provider);
 // const flightSuretyData = new web3.eth.Contract(FlightSuretyData.abi, config.dataAddress, { data: '0x627306090abaB3A6e1400e9345bC60c78a8BEf57'});
 const flightSuretyApp = new web3.eth.Contract(FlightSuretyApp.abi, config.appAddress, { data: config.dataAddress });
