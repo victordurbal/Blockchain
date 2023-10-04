@@ -11,6 +11,11 @@ import './flightsurety.css';
         // console.log('NUMBER OF ACCOUNT ' + this.web3.eth.accounts.length);
         // console.log(this.web3.personal.newAccount());
         // console.log(this.web3.eth.accounts.length);
+        let max_insurancePrice;
+        // let isInsured;
+        contract.maxInsurancePrice().then(function(price) {
+            max_insurancePrice = price;
+        });
 
         function findKeyByValue(obj, value) {
             for (let key in obj) {
@@ -59,11 +64,32 @@ import './flightsurety.css';
                 }
                 arrayFlight_Insured[custWant_FlightInsured][flightIns] = insurePrice;
                 const keys = Object.keys(arrayFlight_Insured);
-                // contract.insureFlight(addressAirline, insurePrice, custWant_FlightInsured, (error, result) => {
-                //     display('Flight ', 'Insurance', [ { label: 'Flight insured', error: error, value: result.flightIns + ' ' + result.timestamp} ]);
+                // contract.custInsuredOrNot(flightIns, custWant_FlightInsured).then(function(yesOrNo) {
+                //     isInsured = yesOrNo;
                 // });
-                contract.isAuth();
-                updateTable([custWant_FlightInsured.toString(),flightIns,insurePrice]);
+                try{
+                    contract.insureFlight(addressAirline, flightIns, custWant_FlightInsured, insurePrice, (error, result) => {
+                        // display('Flight ', 'Insurance', [ { label: 'Flight insured', error: error, value: result.flightIns + ' ' + result.timestamp} ]);
+                        display('Flight ', 'Insurance', [ { label: 'Flight insured', error: error, value: result + ' this was added ' + result} ]);
+                    });
+                    if(insurePrice > max_insurancePrice){
+                        alert('Price input cannot be higher than ' + max_insurancePrice,toString() + ' ether');
+                    // }else if(isInsured){
+                    //     alert('You already purchased insurance on the flight.');
+                    //     console.log('is already insured ? : ' + isInsured);
+                    }else{
+                        updateTable([custWant_FlightInsured.toString(),flightIns,insurePrice]);
+                    }
+                }catch{
+                    // a = 2;
+                    // alert('You already purchased insurance on the flight.');
+                    // console.log('is already insured ? : ' + isInsured);
+                }
+                // contract.isAuth();
+                
+                // let a = contract.custInsuredOrNot(flightIns, custWant_FlightInsured);
+                // console.log('is insured : '+ a)
+
             }
             // Write transaction
             

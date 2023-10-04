@@ -13,6 +13,7 @@ contract FlightSuretyData {
 
     address private contractOwner;                                      // Account used to deploy contract
     bool private operational = true;                                    // Blocks all state changes throughout the contract if false
+    uint8 MAX_INSURANCE = 1;
 
     struct AirlineProfile {
         bool isRegistered;
@@ -138,6 +139,10 @@ contract FlightSuretyData {
     /*                                     SMART CONTRACT FUNCTIONS                             */
     /********************************************************************************************/
 
+    // check max insurance price
+    function getMaxInsurancePrice() external view returns(uint8){
+        return MAX_INSURANCE;
+    }
     // modify number of voters needed to register an airline
     function setNumberOfVoters(uint256 numbOfAirline) private{
         if (SafeMath.mod(numbOfAirline,2) != 0){
@@ -196,13 +201,17 @@ contract FlightSuretyData {
         require(officialAirline[airlineAdr].isRegistered, "Airline is not registered as part of the insurance.");
         require(officialAirline[airlineAdr].hasGivenFund, "Airline has not yet completed application. You cannot get insured with it yet.");
         require(insurees[flight][msg.sender] == 0, 'You already purchased insurance for this flight.');
-        require(msg.value <= 1 ether, 'You cannot purchase insurance for more than 1 ether.');
+        require(msg.value <= MAX_INSURANCE  * 1 ether, 'You cannot purchase insurance for more than 1 ether.');
         payable(airlineAdr).transfer(msg.value);
         insurees[flight][msg.sender] = msg.value;
         insureeCorresNum[flight] = insureeCorresNum[flight] + 1;
         corresTable[insureeCorresNum[flight]] = msg.sender;
 
         return true;
+    }
+
+    function IsCustomerInsured(string calldata flight) external view returns(bool success){
+        return insurees[flight][msg.sender] > 0;
     }
 
     /**

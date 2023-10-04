@@ -16,59 +16,32 @@ const options = {
       onTimeout: false
   }
 };
-let web3Provider = new Web3.providers.WebsocketProvider(config.url.replace('http', 'ws'), options);
+let web3Provider = new Web3.providers.WebsocketProvider(config.url.replace('http', 'ws'), options)
 const web3 = new Web3(web3Provider);
 // const flightSuretyData = new web3.eth.Contract(FlightSuretyData.abi, config.dataAddress, { data: '0x627306090abaB3A6e1400e9345bC60c78a8BEf57'});
 const flightSuretyApp = new web3.eth.Contract(FlightSuretyApp.abi, config.appAddress, { data: config.dataAddress });
 // console.log(web3.eth.getAccounts().then(function(results){return results}))
 
+const startServer = async () => {
 
-// web3.eth.getAccounts()
-//   .then(function(accounts) {
-//     console.log(accounts);
-//   })
-//   .catch(function(error) {
-//     console.error(error);
-//   });
+  const getAccounts = async () => {
+    return new Promise((resolve, reject) => {
+      console.log('IT GOES HERE')
+      web3.eth.getAccounts((error, accts) => {
+        // if (error) {
+        //   console.error(error);
+        //   reject(error);
+        // } else {
+        //   console.log(accts);
+        //   resolve(accts);}
+  });});};
 
-// web3.eth.getAccounts().then(accounts => {
-//   console.log(accounts)
-// });
-// // async/await syntax
-// let accounts = await web3.eth.getAccounts();
-// console.log(accounts)
-
-// web3.eth.getAccounts().then(accts => {
-//   console.log('IT GOES HERE')
-//   console.log(accts)
-// }).catch(err => console.log(err));
-
-// const startServer = async () => {
-
-//   const getAccounts = async () => {
-//     // await web3.eth.getAccounts().then(accounts => {
-//     //     console.log(accounts)
-//     //   });
-//     return new Promise((resolve, reject) => {
-//       console.log('IT GOES HERE')
-//       web3.eth.getAccounts((error, accts) => {
-//         // if (error) {
-//         //   console.error(error);
-//         //   reject(error);
-//         // } else {
-//         //   console.log(accts);
-//         //   resolve(accts);}
-//         console.log(accts)
-//       });
-//     });
-// };
-//   const accounts = getAccounts();
-//   try {
-//     const accounts = await getAccounts();
-//     console.log('accounts : ' + accounts)
-//   } catch (error) {
-//     console.error('ERROR IS PUTAIN : ' + error);
-//   }
+  try {
+    const accounts = await getAccounts();
+    console.log('accounts : ' + accounts)
+  } catch (error) {
+    console.error('ERROR IS PUTAIN : ' + error);
+  }
     // console.log(accounts[0])
     // Your code that depends on the accounts goes here
     // let fee = flightSuretyApp.methods.REGISTRATION_FEE.call();
@@ -101,9 +74,9 @@ const flightSuretyApp = new web3.eth.Contract(FlightSuretyApp.abi, config.appAdd
   // } catch (error) {
   //   console.error(error);
   // }
-// };
+};
 
-// startServer();
+startServer();
 
 
 // const accounts = await getAccounts();

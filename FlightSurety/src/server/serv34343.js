@@ -22,15 +22,6 @@ const web3 = new Web3(web3Provider);
 const flightSuretyApp = new web3.eth.Contract(FlightSuretyApp.abi, config.appAddress, { data: config.dataAddress });
 // console.log(web3.eth.getAccounts().then(function(results){return results}))
 
-
-// web3.eth.getAccounts()
-//   .then(function(accounts) {
-//     console.log(accounts);
-//   })
-//   .catch(function(error) {
-//     console.error(error);
-//   });
-
 // web3.eth.getAccounts().then(accounts => {
 //   console.log(accounts)
 // });
@@ -38,10 +29,10 @@ const flightSuretyApp = new web3.eth.Contract(FlightSuretyApp.abi, config.appAdd
 // let accounts = await web3.eth.getAccounts();
 // console.log(accounts)
 
-// web3.eth.getAccounts().then(accts => {
-//   console.log('IT GOES HERE')
-//   console.log(accts)
-// }).catch(err => console.log(err));
+web3.eth.getAccounts().then(accts => {
+  console.log('IT GOES HERE')
+  console.log(accts)
+});
 
 // const startServer = async () => {
 

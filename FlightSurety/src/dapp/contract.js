@@ -96,7 +96,7 @@ export default class Contract {
 
             await this.flightSuretyData.methods.authorizeCaller(this.appAdress).send({ from: this.owner})
                 .on('transactionHash', function(hash){
-                    console.log('Transaction hash:', hash);
+                    // console.log('Transaction hash:', hash);
                 })
                 .on('receipt', function(receipt){
                     // console.log('Transaction receipt auth caller :', receipt);
@@ -124,40 +124,22 @@ export default class Contract {
                 }
             }
 
-            this.getBalance(this.owner);
-            // for(let iAirline = 0 ; iAirline < 3 ; iAirline++){
-            //     for(let iFlight = 0 ; iFlight < 3 ; iFlight++){
-                    let iAirline = 0;
-                    let iFlight = 0;
+            // this.getBalance(this.airlines[0]);
+            for(let iAirline = 0 ; iAirline < 3 ; iAirline++){
+                for(let iFlight = 0 ; iFlight < 3 ; iFlight++){
+                    // let iAirline = 0;
+                    // let iFlight = 0;
                     try{
-                        // await this.registerAirlineFlight(iAirline,iFlight);
-                        await this.flightSuretyApp.methods.registerFlight(this.AirlineFlights[this.airlinesNames[this.airlines[iAirline]]][iFlight], 0, 237863).send({ from: this.airlines[iAirline]},function(error, result) {
-                            if (error) {
-                                console.log('Error check :', error);
-                            } else {
-                                console.log('flight ' + flightNumber.toString() + ' registered :', result);
-                            }});
-
+                        await this.registerAirlineFlight(iAirline,iFlight);
+                        await this.flightSuretyApp.methods.isFlightRegistered(this.AirlineFlights[this.airlinesNames[this.airlines[iAirline]]][iFlight]).call(function(error, result) {
+                            console.log('Flight is registered : ', result);
+                        });
                     }catch(e){
                         console.log('Error for flight registration is : ' + e)
                     }
-            //     }
-            // }
+                }
+            }
             // //http://localhost:8000/#
-
-            await this.flightSuretyApp.methods.isFlightRegistered(this.AirlineFlights[this.airlinesNames[this.airlines[0]]][0]).call(function(error, result) {
-                console.log('2) Flight is registered : ', result);
-            });
-            // await this.flightSuretyApp.methods.registerFlight('A', 20, 10).send({ from: this.airlines[2]});
-            // await this.flightSuretyApp.methods.isFlightRegistered('A').call(function(error, result) {
-            //     console.log('IS FLIGHT A registered : ', result);
-            // });
-            // await this.flightSuretyApp.methods.getFlightStatus('A').call(function(error, result) {
-            //     console.log('Flight STATUS is : ', result);
-            // });
-            // await this.flightSuretyApp.methods.getFlightAirline('A').call(function(error, result) {
-            //     console.log('address airline for flight is : ', result.toString());
-            // });
 
             callback();
         // });
@@ -183,7 +165,7 @@ export default class Contract {
             "gasPrice": 100000000000
         }) //.on('transactionHash', function(hash){console.log('Transaction hash:', hash);})
         .on('receipt', function(receipt){
-            console.log('Transaction receipt reg airl:', receipt);
+            // console.log('Transaction receipt reg airl:', receipt);
         })
         .on('error', function(error){
             console.log('Error :', error);
@@ -195,7 +177,8 @@ export default class Contract {
     async fundContract(airlineNumber){
         // fund the contract
         await this.flightSuretyData.methods.fund().send({from: this.airlines[airlineNumber], value: Web3.utils.toWei('10', 'ether')}).on('receipt', function(receipt){
-            console.log('Transaction receipt funding :', receipt);})
+            // console.log('Transaction receipt funding :', receipt)
+            ;})
         .on('error', function(error){
             console.log('Error :', error);
         });
@@ -210,12 +193,9 @@ export default class Contract {
         let timestamp = Math.floor(Date.now() / 1000);
         // this.AirlineFlights[this.airlinesNames[this.airlines[airlineNumber]]][flightNumber]
         console.log('flight is ' + this.AirlineFlights[this.airlinesNames[this.airlines[airlineNumber]]][flightNumber])
-        await this.flightSuretyApp.methods.registerFlight(this.AirlineFlights[this.airlinesNames[this.airlines[airlineNumber]]][flightNumber], 0, timestamp).send({ from: this.airlines[airlineNumber]},function(error, result) {
-        if (error) {
-            console.log('Error check :', error);
-        } else {
-            console.log('flight ' + flightNumber.toString() + ' registered :', result);
-        }});
+        await this.flightSuretyApp.methods.registerFlight(this.AirlineFlights[this.airlinesNames[this.airlines[airlineNumber]]][flightNumber], 0, timestamp).send({ from: this.airlines[airlineNumber],
+            "gas": 4712388,
+            "gasPrice": 100000000000 });
     }
 
     pay(msgSender){
@@ -245,17 +225,19 @@ export default class Contract {
             .call({ from: self.owner}, callback);
     }
 
-    insureFlight(airlineAdr, flight, msgSender, callback) {
+    async insureFlight(airlineAdr, flight, msgSender, priceInsurance, callback) {
         let self = this;
-        self.flightSuretyData.methods
-             .buy(airlineAdr, flight)
-             .send({ from: msgSender}, callback);
+        let priceValue = priceInsurance.toString();
+        await self.flightSuretyData.methods
+            .buy(airlineAdr, flight)
+            .send({ from: msgSender, value: Web3.utils.toWei(priceValue, 'ether'),"gas": 4712388,
+            "gasPrice": 100000000000 }, callback);
      }
 
-    fetchFlightStatus(flight,timestampFlight, callback) {
+    fetchFlightStatus(airlineFl,flight,timestampFlight, callback) {
         let self = this;
         let payload = {
-            airline: self.airlines[0],
+            airline: airlineFl,
             flight: flight,
             timestamp: timestampFlight
         } 
@@ -264,6 +246,18 @@ export default class Contract {
             .send({ from: self.owner}, (error, result) => {
                 callback(error, payload);
             });
+    }
+
+    async maxInsurancePrice(){
+        const price = await this.flightSuretyData.methods.getMaxInsurancePrice().call({ from: this.owner });
+        // console.log("Price max is ", price);
+        return price;
+    }
+
+    async custInsuredOrNot(flight, customerAddress){
+        const yesNo = await this.flightSuretyData.methods.IsCustomerInsured(flight).call({ from: customerAddress});
+        // console.log("Cust is insured ", yesNo);
+        return yesNo
     }
 
 
